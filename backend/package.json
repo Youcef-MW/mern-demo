@@ -8,12 +8,8 @@
     "test": "jest --detectOpenHandles"
   },
   "dependencies": {
-<<<<<<< HEAD
     "express": "^4.19.2",
     "cors": "^2.8.6"
-=======
-    "express": "^4.19.2"
->>>>>>> eeeb75ca32498d3589f2246579bbfa521a97fbc8
   },
   "devDependencies": {
     "jest": "^29.7.0",
