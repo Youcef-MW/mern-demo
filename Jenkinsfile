@@ -30,7 +30,7 @@ pipeline {
       steps {
         dir('frontend') {
           sh 'npm install'
-          sh 'CI=true npm test --passWithNoTests'
+          sh 'CI=true npm test'
         }
       }
     }
