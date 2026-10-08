@@ -20,6 +20,7 @@ pipeline {
     stage('Test Backend') {
       steps {
         dir('backend') {
+          sh 'rm -rf node_modules package-lock.json'
           sh 'npm install'
           sh 'npm test'
         }
@@ -29,6 +30,7 @@ pipeline {
     stage('Test Frontend') {
       steps {
         dir('frontend') {
+          sh 'rm -rf node_modules package-lock.json'
           sh 'npm install'
           sh 'CI=true npm test'
         }
