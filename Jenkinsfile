@@ -1,44 +1,52 @@
 pipeline {
-    agent any
+  agent any
 
-    tools {
-        nodejs 'NodeJS' // Configured under Jenkins > Global Tool Configuration
+  environment {
+    IMAGE_TAG = "${env.BUILD_NUMBER}"
+  }
+
+  stages {
+
+    stage('Checkout') {
+      steps {
+        git branch: 'main', url: 'https://github.com/Youcef-MW/mern-demo.git'
+      }
     }
 
-    environment {
-        CI = 'true'
+    stage('Test Backend') {
+      steps {
+        dir('backend') {
+          sh 'npm install'
+          sh 'npm test'
+        }
+      }
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
+    stage('Test Frontend') {
+      steps {
+        dir('frontend') {
+          sh 'npm install'
+          sh 'CI=true npm test'
         }
-        
-        stage('Backend - Install & Test') {
-            steps {
-                dir('backend') {
-                    sh 'npm install'
-                    sh 'npm test'
-                }
-            }
-        }
-
-        stage('Frontend - Install & Build') {
-            steps {
-                dir('frontend') {
-                    sh 'npm install'
-                    sh 'npm test -- --passWithNoTests'
-                    sh 'npm run build'
-                }
-            }
-        }
+      }
     }
 
-    post {
-        always {
-            cleanWs()
-        }
+    stage('Build Docker Images') {
+      steps {
+        sh 'docker build -t mern-backend:$IMAGE_TAG ./backend'
+        sh 'docker build -t mern-frontend:$IMAGE_TAG ./frontend'
+      }
     }
+
+    stage('Deploy to Kubernetes') {
+      steps {
+        sh 'kubectl set image deployment/backend backend=mern-backend:$IMAGE_TAG -n mern-app'
+        sh 'kubectl set image deployment/frontend frontend=mern-frontend:$IMAGE_TAG -n mern-app'
+
+        sh 'kubectl rollout status deployment/backend -n mern-app'
+        sh 'kubectl rollout status deployment/frontend -n mern-app'
+      }
+    }
+
+  }
 }
