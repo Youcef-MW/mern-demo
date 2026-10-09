@@ -43,7 +43,21 @@ pipeline {
         sh 'docker build -t mern-frontend:$IMAGE_TAG ./frontend'
       }
     }
+		stage('Apply Kubernetes Manifests') {
+			steps {
+					sh '''
+							echo "Ensuring namespace exists..."
+							kubectl create namespace mern-app \
+									--dry-run=client -o yaml | kubectl apply -f -
 
+							echo "Applying Kubernetes manifests..."
+							kubectl apply -f k8s/
+
+							echo "Verifying Deployments..."
+							kubectl get deployments -n mern-app
+					'''
+			}
+		}
     stage('Deploy to Kubernetes') {
       steps {
         sh 'kubectl set image deployment/backend backend=mern-backend:$IMAGE_TAG -n mern-app'
